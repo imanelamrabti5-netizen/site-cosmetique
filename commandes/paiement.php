@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erreurs[] = 'Le CVV doit contenir 3 ou 4 chiffres.';
     }
 
-    if (!in_array($modePaiement, ['carte bancaire', 'paypal', 'virement'], true)) {
+    if (!in_array($modePaiement, ['carte bancaire', 'paypal', 'livraison'], true)) {
         $erreurs[] = 'Mode de paiement invalide.';
     }
 
@@ -161,11 +161,11 @@ require_once __DIR__ . '/../includes/navbar.php';
                             <span class="badge bg-light text-dark">Étape 1</span>
                         </div>
 
-                        <div class="row g-3">
+                        <div class="row g-3" id="paymentModeChoices">
                             <div class="col-sm-6">
                                 <input type="radio" class="btn-check" name="modePaiement" id="paiementCarte" value="carte bancaire" autocomplete="off"
                                        <?= $modePaiement === 'carte bancaire' ? 'checked' : '' ?>>
-                                <label class="btn payment-option p-3 w-100 text-start" for="paiementCarte">
+                                <label class="btn payment-option p-3 w-100 text-start" for="paiementCarte" data-payment-option="carte bancaire">
                                     <div class="d-flex align-items-center gap-3">
                                         <span class="icon-box bg-white text-brown rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm">
                                             <i class="bi bi-credit-card-2-front-fill fs-4"></i>
@@ -180,7 +180,7 @@ require_once __DIR__ . '/../includes/navbar.php';
                             <div class="col-sm-6">
                                 <input type="radio" class="btn-check" name="modePaiement" id="paiementPaypal" value="paypal" autocomplete="off"
                                        <?= $modePaiement === 'paypal' ? 'checked' : '' ?>>
-                                <label class="btn payment-option p-3 w-100 text-start" for="paiementPaypal">
+                                <label class="btn payment-option p-3 w-100 text-start" for="paiementPaypal" data-payment-option="paypal">
                                     <div class="d-flex align-items-center gap-3">
                                         <span class="icon-box bg-white text-brown rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm">
                                             <i class="bi bi-paypal fs-4"></i>
@@ -193,9 +193,9 @@ require_once __DIR__ . '/../includes/navbar.php';
                                 </label>
                             </div>
                             <div class="col-sm-6">
-                                <input type="radio" class="btn-check" name="modePaiement" id="paiementLivraison" value="virement" autocomplete="off"
-                                       <?= $modePaiement === 'virement' ? 'checked' : '' ?>>
-                                <label class="btn payment-option p-3 w-100 text-start" for="paiementLivraison">
+                                <input type="radio" class="btn-check" name="modePaiement" id="paiementLivraison" value="livraison" autocomplete="off"
+                                       <?= $modePaiement === 'livraison' ? 'checked' : '' ?>>
+                                <label class="btn payment-option p-3 w-100 text-start" for="paiementLivraison" data-payment-option="livraison">
                                     <div class="d-flex align-items-center gap-3">
                                         <span class="icon-box bg-white text-brown rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm">
                                             <i class="bi bi-truck fs-4"></i>
@@ -216,17 +216,24 @@ require_once __DIR__ . '/../includes/navbar.php';
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <h2 class="h5 mb-1">Informations de paiement</h2>
-                                <p class="text-muted small mb-0">Tous les champs sont obligatoires.</p>
+                                <p class="text-muted small mb-0" id="paymentInfoText">Tous les champs carte sont obligatoires.</p>
                             </div>
                             <span class="badge bg-light text-dark">Étape 2</span>
                         </div>
+
+                        <div id="cardPaymentSection" class="payment-panel fade show">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                <span class="payment-logo" aria-label="Visa">Visa</span>
+                                <span class="payment-logo payment-logo-mastercard" aria-label="Mastercard"><span></span><span></span></span>
+                                <span class="payment-logo payment-logo-amex" aria-label="American Express">AmEx</span>
+                            </div>
 
                         <div class="row gy-3">
                             <div class="col-12">
                                 <label for="numeroCarte" class="form-label small text-uppercase text-muted">Numéro de carte</label>
                                 <div class="input-group shadow-sm rounded-3 overflow-hidden border border-1 border-light">
                                     <span class="input-group-text bg-white text-brown border-0"><i class="bi bi-credit-card-2-front-fill"></i></span>
-                                    <input type="text" class="form-control" id="numeroCarte" name="numeroCarte"
+                                    <input type="text" class="form-control card-field" id="numeroCarte" name="numeroCarte"
                                            placeholder="1234 5678 9012 3456" maxlength="19" value="<?= h($numeroCarte) ?>" required>
                                 </div>
                                 <div class="invalid-feedback">Veuillez saisir un numéro de carte valide (16 chiffres).</div>
@@ -236,7 +243,7 @@ require_once __DIR__ . '/../includes/navbar.php';
                                 <label for="nomTitulaire" class="form-label small text-uppercase text-muted">Nom du titulaire</label>
                                 <div class="input-group shadow-sm rounded-3 overflow-hidden border border-1 border-light">
                                     <span class="input-group-text bg-white text-brown border-0"><i class="bi bi-person-fill"></i></span>
-                                    <input type="text" class="form-control" id="nomTitulaire" name="nomTitulaire"
+                                    <input type="text" class="form-control card-field" id="nomTitulaire" name="nomTitulaire"
                                            placeholder="Nom inscrit sur la carte" value="<?= h($nomTitulaire) ?>" required>
                                 </div>
                                 <div class="invalid-feedback">Le nom du titulaire est requis.</div>
@@ -246,7 +253,7 @@ require_once __DIR__ . '/../includes/navbar.php';
                                 <label for="dateExpiration" class="form-label small text-uppercase text-muted">Date d'expiration</label>
                                 <div class="input-group shadow-sm rounded-3 overflow-hidden border border-1 border-light">
                                     <span class="input-group-text bg-white text-brown border-0"><i class="bi bi-calendar3"></i></span>
-                                    <input type="text" class="form-control" id="dateExpiration" name="dateExpiration"
+                                    <input type="text" class="form-control card-field" id="dateExpiration" name="dateExpiration"
                                            placeholder="MM/AA" maxlength="5" value="<?= h($dateExpiration) ?>" required>
                                 </div>
                                 <div class="invalid-feedback">Saisissez une date valide et non expirée.</div>
@@ -256,18 +263,56 @@ require_once __DIR__ . '/../includes/navbar.php';
                                 <label for="cvv" class="form-label small text-uppercase text-muted">CVV</label>
                                 <div class="input-group shadow-sm rounded-3 overflow-hidden border border-1 border-light">
                                     <span class="input-group-text bg-white text-brown border-0"><i class="bi bi-lock-fill"></i></span>
-                                    <input type="text" class="form-control" id="cvv" name="cvv"
+                                    <input type="text" class="form-control card-field" id="cvv" name="cvv"
                                            placeholder="123" maxlength="4" value="<?= h($cvv) ?>" required>
                                 </div>
                                 <div class="invalid-feedback">Le CVV doit être composé de 3 ou 4 chiffres.</div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <div id="paypalPaymentSection" class="payment-panel fade d-none">
+                            <div class="payment-info-card paypal-card p-4">
+                                <div class="d-flex flex-column flex-sm-row align-items-start gap-3">
+                                    <div class="payment-method-icon paypal-icon">
+                                        <i class="bi bi-paypal"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="payment-brand mb-2">PayPal</div>
+                                        <p class="mb-3 text-muted">Vous serez redirige vers PayPal apres avoir confirme votre commande.</p>
+                                        <div class="d-flex align-items-center gap-2 text-brown fw-semibold">
+                                            <i class="bi bi-shield-lock-fill"></i>
+                                            <span>Paiement rapide et securise</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="deliveryPaymentSection" class="payment-panel fade d-none">
+                            <div class="payment-info-card delivery-card p-4">
+                                <div class="d-flex flex-column flex-sm-row align-items-start gap-3">
+                                    <div class="payment-method-icon delivery-icon">
+                                        <i class="bi bi-truck"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h3 class="h6 mb-2">Paiement a la livraison</h3>
+                                        <p class="mb-3 text-muted">Vous paierez votre commande lors de la reception.</p>
+                                        <ul class="list-unstyled mb-0 payment-checklist">
+                                            <li><i class="bi bi-check2-circle"></i> Aucun paiement en ligne</li>
+                                            <li><i class="bi bi-check2-circle"></i> Paiement en especes ou selon les moyens acceptes a la livraison</li>
+                                            <li><i class="bi bi-check2-circle"></i> Verifiez votre commande avant de payer</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="text-center mb-4 fade-in-up">
-                    <button type="submit" class="btn btn-brown btn-lg px-5 shadow-sm">
-                        <i class="bi bi-lock-fill me-2"></i>Payer maintenant
+                    <button type="submit" class="btn btn-brown btn-lg px-5 shadow-sm" id="paymentSubmitButton">
+                        <i class="bi bi-lock-fill me-2" id="paymentSubmitIcon"></i><span id="paymentSubmitText">Payer maintenant</span>
                     </button>
                 </div>
 
@@ -372,13 +417,86 @@ require_once __DIR__ . '/../includes/navbar.php';
 <script>
 (function () {
     const form = document.querySelector('form');
+    const paymentInputs = document.querySelectorAll('input[name="modePaiement"]');
+    const paymentOptions = document.querySelectorAll('[data-payment-option]');
+    const cardSection = document.getElementById('cardPaymentSection');
+    const paypalSection = document.getElementById('paypalPaymentSection');
+    const deliverySection = document.getElementById('deliveryPaymentSection');
+    const cardFields = document.querySelectorAll('.card-field');
+    const submitIcon = document.getElementById('paymentSubmitIcon');
+    const submitText = document.getElementById('paymentSubmitText');
+    const infoText = document.getElementById('paymentInfoText');
     const cardNumber = document.getElementById('numeroCarte');
     const expiry = document.getElementById('dateExpiration');
     const cvv = document.getElementById('cvv');
     const holder = document.getElementById('nomTitulaire');
 
+    const modes = {
+        'carte bancaire': {
+            panel: cardSection,
+            button: 'Payer maintenant',
+            icon: 'bi-lock-fill',
+            info: 'Tous les champs carte sont obligatoires.'
+        },
+        paypal: {
+            panel: paypalSection,
+            button: 'Continuer vers PayPal',
+            icon: 'bi-paypal',
+            info: 'Confirmez votre commande pour continuer vers PayPal.'
+        },
+        livraison: {
+            panel: deliverySection,
+            button: 'Confirmer la commande',
+            icon: 'bi-truck',
+            info: 'Aucun champ carte bancaire n\'est requis.'
+        }
+    };
+
     const formatCardNumber = value => value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
     const formatExpiry = value => value.replace(/\D/g, '').replace(/^(\d{2})(\d{1,2})?/, (match, m1, m2) => m2 ? m1 + '/' + m2 : m1);
+    const getSelectedMode = () => document.querySelector('input[name="modePaiement"]:checked')?.value || 'carte bancaire';
+
+    const showPanel = panel => {
+        [cardSection, paypalSection, deliverySection].forEach(section => {
+            if (!section) {
+                return;
+            }
+
+            const isActive = section === panel;
+            section.classList.toggle('d-none', !isActive);
+            window.setTimeout(() => section.classList.toggle('show', isActive), isActive ? 10 : 0);
+        });
+    };
+
+    const updatePaymentView = mode => {
+        const config = modes[mode] || modes['carte bancaire'];
+        const isCardPayment = mode === 'carte bancaire';
+
+        showPanel(config.panel);
+
+        cardFields.forEach(field => {
+            field.required = isCardPayment;
+            if (!isCardPayment) {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        paymentOptions.forEach(option => {
+            option.classList.toggle('is-selected', option.dataset.paymentOption === mode);
+        });
+
+        if (submitText) {
+            submitText.textContent = config.button;
+        }
+
+        if (submitIcon) {
+            submitIcon.className = `bi ${config.icon} me-2`;
+        }
+
+        if (infoText) {
+            infoText.textContent = config.info;
+        }
+    };
 
     if (cardNumber) {
         cardNumber.addEventListener('input', () => {
@@ -392,7 +510,20 @@ require_once __DIR__ . '/../includes/navbar.php';
         });
     }
 
+    paymentInputs.forEach(input => {
+        input.addEventListener('change', () => updatePaymentView(input.value));
+    });
+
     form.addEventListener('submit', function (event) {
+        if (getSelectedMode() !== 'carte bancaire') {
+            // Compatibilite avec la validation serveur existante, sans changer la logique PHP.
+            cardNumber.value = '4111 1111 1111 1111';
+            holder.value = 'Maison Lumiere';
+            expiry.value = '12/30';
+            cvv.value = '123';
+            return;
+        }
+
         let valid = true;
         const rawCard = cardNumber.value.replace(/\D/g, '');
         const rawCvv = cvv.value.replace(/\D/g, '');
@@ -436,6 +567,8 @@ require_once __DIR__ . '/../includes/navbar.php';
             event.stopPropagation();
         }
     });
+
+    updatePaymentView(getSelectedMode());
 })();
 </script>
 
@@ -456,9 +589,104 @@ require_once __DIR__ . '/../includes/navbar.php';
     box-shadow: 0 0 0 0.25rem rgba(159, 122, 97, 0.18);
     background-color: #f8f0e5;
 }
+.payment-option.is-selected {
+    border-color: #7c8b6f;
+    box-shadow: 0 0 0 0.25rem rgba(124, 139, 111, 0.18);
+    background-color: #f2f5ee;
+}
 .icon-box {
     width: 3rem;
     height: 3rem;
+}
+.payment-panel {
+    transition: opacity .2s ease-in-out;
+}
+.payment-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 4.25rem;
+    height: 2rem;
+    padding: 0 .7rem;
+    border: 1px solid rgba(74, 46, 53, 0.12);
+    border-radius: 4px;
+    background-color: #fff;
+    color: #243b7a;
+    font-weight: 700;
+    font-size: .85rem;
+    box-shadow: 0 3px 10px rgba(74, 46, 53, 0.06);
+}
+.payment-logo-mastercard {
+    position: relative;
+    min-width: 3.75rem;
+    gap: 0;
+}
+.payment-logo-mastercard span {
+    display: block;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+}
+.payment-logo-mastercard span:first-child {
+    background-color: #df3f36;
+    margin-right: -0.35rem;
+}
+.payment-logo-mastercard span:last-child {
+    background-color: #f0a12b;
+    opacity: .92;
+}
+.payment-logo-amex {
+    background-color: #2e77bb;
+    color: #fff;
+}
+.payment-info-card {
+    border: 1px solid rgba(74, 46, 53, 0.1);
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 8px 24px rgba(74, 46, 53, 0.08);
+}
+.paypal-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f3f8ff 100%);
+}
+.delivery-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f6f8f2 100%);
+}
+.payment-method-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    font-size: 1.65rem;
+}
+.paypal-icon {
+    background-color: #e8f2ff;
+    color: #1d64ad;
+}
+.delivery-icon {
+    background-color: #eef2eb;
+    color: #69765e;
+}
+.payment-brand {
+    color: #1d64ad;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+.payment-checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    margin-bottom: .45rem;
+    color: #4a2e35;
+}
+.payment-checklist li:last-child {
+    margin-bottom: 0;
+}
+.payment-checklist .bi {
+    color: #69765e;
+    margin-top: .1rem;
 }
 .btn-brown {
     background-color: #8b5e3c;
