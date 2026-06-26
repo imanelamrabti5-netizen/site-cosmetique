@@ -21,7 +21,7 @@ define('CHEMIN_ASSETS',   CHEMIN_RACINE . '/assets');
 define('URL_CSS',         URL_BASE . '/assets/css');
 define('URL_JS',          URL_BASE . '/assets/js');
 define('URL_IMAGES',      URL_BASE . '/assets/images');
-define('URL_PRODUITS',    URL_BASE . '/assets/images/produits');
+define('URL_PRODUITS',    URL_BASE . '/assets/images/produits/');
 
 // --- Dossier d'upload des images produits ---
 define('UPLOAD_DIR',      CHEMIN_RACINE . '/assets/images/produits/');
